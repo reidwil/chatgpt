@@ -5,7 +5,7 @@ import pathlib # for writing python functions into files
 import openai # for making the python functions
 
 
-key = "$CHATGPT_API_KEY" # get this on their website
+key = os.getenv('OPENAI_API_KEY') # get this on their website
 
 def get_args():
     output = argparse.ArgumentParser(description="A python cli that allows you to ask and draw pictures upon giving openai's bots some topics.")
