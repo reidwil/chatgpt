@@ -11,7 +11,7 @@ def get_args():
     output = argparse.ArgumentParser(description="A python cli that allows you to ask and draw pictures upon giving openai's bots some topics.")
     output.add_argument('--ask', type=str, help="Text input of what you'd like to ask the bot")
     output.add_argument('--draw', type=str, help="Text input of what you'd like to see drawn")
-    output.add_argument('--output-file', type=os.PathLike, help="The file you'd like you want a text or pictures written to")
+    output.add_argument('--output-file', type=os.PathLike, help="Location of std.out from program")
     output.parse_args()
     if len(sys.argv)==1:
         output.print_help(sys.stderr)
