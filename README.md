@@ -12,6 +12,7 @@ Interact with chatgpt!
 -----------------
 ## Usage:
 
+```
 usage: main.py [-h] [--ask ASK] [--draw DRAW] [-n N] [--download]
 
 A python cli that allows you to ask and draw pictures upon giving openai's bots some topics.
@@ -22,7 +23,7 @@ options:
   --draw DRAW  Text input of what you'd like to see drawn
   -n N         N times you want the bot to run - default is 2
   --download   Should download the file?
-
+```
 ---------------
 
 ## Example
