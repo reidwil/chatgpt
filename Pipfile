@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 chatgpt = "*"
 openai = "*"
+pillow = "*"
 
 [dev-packages]
 
