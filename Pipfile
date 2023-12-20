@@ -4,10 +4,12 @@ verify_ssl = false
 name = "pypi"
 
 [packages]
-chatgpt = "*"
 openai = "*"
 pillow = "*"
 click = "*"
+urllib3 = "==1.26.6"
+chatgpt = {editable = true, path = "."}
+pytest = "*"
 
 [dev-packages]
 

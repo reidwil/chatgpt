@@ -3,9 +3,12 @@ import random
 import sys
 import os
 from io import BytesIO
+from PIL import Image
 
 import openai
 import requests
+
+from resize_image import resize_image
 
 key = os.getenv('OPENAI_API_KEY') # get this on their website
 
@@ -44,32 +47,27 @@ class AI():
         response = openai.Image.create(
             prompt=prompt,
             n=n,
-            size=size
+            size=size,
         )
         return response
 
-    def recreate_image(self, image_file, n, size = "1024x1024"):
-        formatted_image = self.format_photo_for_openai(image_file)
-        response = openai.Image.create_variation(formatted_image, n=n, size=size)
+    def recreate_image(self, image_path, n, size = "1024x1024"):
+        image = self.resize_image_4mb(image_path)
+        image.seek(0)
+        image_binary = image.read()
+        response = openai.Image.create_variation(image_binary, n=n, size=size)
         return response
 
-    def format_photo_for_openai(self, file_path):
-        # Load the image from file
-        with open(file_path, 'rb') as f:
-            image = f.read()
+    @staticmethod
+    def resize_image_4mb(image_path):
+        return resize_image(image_path=image_path)
 
-        # Convert the image to a bytestream
-        image_bytes = BytesIO(image)
-
-        # Create an openai Image object from the bytestream
-        image_obj = openai.Image.create(image_bytes=image_bytes)
-
-        return image_obj
-
-    def generate_id(self):
+    @staticmethod
+    def generate_id():
         return random.randint(1111,9999)
 
-    def parse_urls(self, draw_payload):
+    @staticmethod
+    def parse_urls(draw_payload):
         return [item["url"] for item in draw_payload["data"]]
 
     @staticmethod
@@ -94,4 +92,5 @@ class AI():
                 handler.write(img_data)
 
 def make_bot():
+    print("CREATING BOT...")
     return AI(key)

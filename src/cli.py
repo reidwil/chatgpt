@@ -34,5 +34,25 @@ def ask(prompt, model, temperature, max_tokens, top_p, frequency_penalty, presen
     result = bot_instance.ask(prompt, model, temperature, max_tokens, top_p, frequency_penalty, presence_penalty)
     click.echo(result)
 
+@cli.command()
+@click.option('--image-path', '-p',
+              help='Path to the file you want to recreate')
+@click.option('--number','-n', default=3,
+              help="The number of pictures to make")
+@click.option('--download', '-d',  is_flag=True, show_default=True, default=False, 
+              help='Should the recreated images be download')
+@click.option('--path', default="./photos", help="The file path to download the drawings to")
+def recreate_image(image_path, number, download, path):
+    bot = make_bot()
+    click.echo("Generating recreated image results...")
+    result = bot.recreate_image(image_path=image_path, n=number)
+    if download:
+        if '/' in image_path:
+            prompt = str(image_path).split('/')[-1]
+        else:
+            prompt = str(image_path)
+        bot.download(prompt=prompt, draw_payload=result, download_path=path)
+    click.echo(result)
+
 if __name__=='__main__':
     cli()
