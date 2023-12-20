@@ -3,9 +3,12 @@ import random
 import sys
 import os
 from io import BytesIO
+from PIL import Image
 
 import openai
 import requests
+
+from resize_image import resize_image
 
 key = os.getenv('OPENAI_API_KEY') # get this on their website
 
@@ -44,57 +47,50 @@ class AI():
         response = openai.Image.create(
             prompt=prompt,
             n=n,
-            size=size
+            size=size,
         )
         return response
 
-    def recreate_image(self, image_file, n, size = "1024x1024"):
-        formatted_image = self.format_photo_for_openai(image_file)
-        response = openai.Image.create_variation(formatted_image, n=n, size=size)
+    def recreate_image(self, image_path, n, size = "1024x1024"):
+        image = self.resize_image_4mb(image_path)
+        image.seek(0)
+        image_binary = image.read()
+        response = openai.Image.create_variation(image_binary, n=n, size=size)
         return response
 
-    def format_photo_for_openai(self, file_path):
-        # Load the image from file
-        with open(file_path, 'rb') as f:
-            image = f.read()
+    @staticmethod
+    def resize_image_4mb(image_path):
+        return resize_image(image_path=image_path)
 
-        # Convert the image to a bytestream
-        image_bytes = BytesIO(image)
-
-        # Create an openai Image object from the bytestream
-        image_obj = openai.Image.create(image_bytes=image_bytes)
-
-        return image_obj
-
-    def generate_id(self):
+    @staticmethod
+    def generate_id():
         return random.randint(1111,9999)
 
-    def parse_urls(self, draw_payload):
+    @staticmethod
+    def parse_urls(draw_payload):
         return [item["url"] for item in draw_payload["data"]]
+
+    @staticmethod
+    def make_dirs_if_not_exists(path: str):
+        path_parts = path.split(os.path.sep)
+        current_path = ""
+
+        for part in path_parts:
+            current_path = os.path.join(current_path, part)
+            if not os.path.exists(current_path):
+                print(f"Could not find dir {current_path}, creating now")
+                os.makedirs(current_path)
 
     def download(self, prompt, draw_payload, download_path=None):
         print("Downloading your nicely made drawings")
         urls = self.parse_urls(draw_payload)
+        dir = download_path or '.'
+        self.make_dirs_if_not_exists(dir)
         for url in urls:
             img_data = requests.get(url).content
-            dir = download_path or '.'
             with open(f'{dir}/{prompt}_{self.generate_id()}.jpg', 'wb') as handler:
                 handler.write(img_data)
 
-def run():
-    bot = AI(key)
-    arguments = get_args().parse_args()
-    if arguments.ask:
-        response = bot.ask(arguments.ask)
-        print("BOT ANSWER:\n\n")
-        print(response)
-    if arguments.draw:
-        image_location = bot.draw(arguments.draw, n=arguments.n, size=arguments.size)
-        print(image_location)
-    if arguments.recreate:
-        image_location = bot.recreate_image(arguments.recreate, n=arguments.n)
-    if arguments.download:
-        bot.download(arguments.draw, image_location)
-
-if __name__=='__main__':
-    run()
+def make_bot():
+    print("CREATING BOT...")
+    return AI(key)
