@@ -1,5 +1,5 @@
 import click
-from bot import make_bot
+from src.bot import make_bot
 
 @click.group()
 def cli():

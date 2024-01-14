@@ -1,36 +1,18 @@
-import argparse
-import random
-import sys
 import os
-from io import BytesIO
-from PIL import Image
+import random
 
 import openai
 import requests
 
-from resize_image import resize_image
+from src.resize_image import resize_image
 
 key = os.getenv('OPENAI_API_KEY') # get this on their website
-
-def get_args():
-    output = argparse.ArgumentParser(description="A python cli that allows you to ask and draw pictures upon giving openai's bots some topics.")
-    output.add_argument('--ask', type=str, help="Text input of what you'd like to ask the bot")
-    output.add_argument('--draw', type=str, help="Text input of what you'd like to see drawn")
-    output.add_argument('--recreate', type=str, help="Filepath of an image you want to recreate")
-    output.add_argument('-n', type=int, required=False, default=3, help="N times you want the bot to run - default is 2")
-    output.add_argument('--download', action='store_true', help="Should download the file?")
-    output.add_argument('--size', type=str, required=False, default="1024x1024", help="Size in pixels you want image to be formatted in ('1024x1024')")
-    output.parse_args()
-    if len(sys.argv)==1:
-        output.print_help(sys.stderr)
-        sys.exit(1)
-    return output
 
 class AI():
     def __init__(self, api_key):
         openai.api_key=api_key
 
-    def ask(self, prompt, model='text-davinci-003', temperature=0, max_tokens=600, top_p=1.0, frequency_penalty=0.0, presence_penalty=0.0):
+    def ask(self, prompt, model='text-davinci-003', temperature=0, max_tokens=600, top_p=1.0, frequency_penalty=0.5, presence_penalty=0.0):
         response = openai.Completion.create(
             model=model,
             prompt=prompt,
@@ -45,6 +27,7 @@ class AI():
 
     def draw(self, prompt, n, size = "1024x1024"):
         response = openai.Image.create(
+            model="dall-e-3",
             prompt=prompt,
             n=n,
             size=size,
@@ -55,7 +38,7 @@ class AI():
         image = self.resize_image_4mb(image_path)
         image.seek(0)
         image_binary = image.read()
-        response = openai.Image.create_variation(image_binary, n=n, size=size)
+        response = openai.Image.create_variation(image_binary, n=n, model="dall-e-3", size=size)
         return response
 
     @staticmethod
@@ -83,6 +66,8 @@ class AI():
 
     def download(self, prompt, draw_payload, download_path=None):
         print("Downloading your nicely made drawings")
+        if len(prompt) > 15:
+            prompt = prompt[:15]
         urls = self.parse_urls(draw_payload)
         dir = download_path or '.'
         self.make_dirs_if_not_exists(dir)

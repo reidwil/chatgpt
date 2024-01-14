@@ -1,5 +1,4 @@
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='chatgpt',
@@ -11,7 +10,7 @@ setup(
     packages=find_packages(exclude=('tests*')),
     entry_points={
         'console_scripts': [
-            'opencli = chatgpt.src.cli:cli'
+            'opencli = src.cli:cli'
         ]
     }
 )
